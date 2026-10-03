@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FCW Builder</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a single reading column (max ~1080px) of sections; hero splits text and symbol, route table and role cards reflow to one column on phones. */
+  :root {
+    color-scheme: dark;
+    --bg: #0e1216;
+    --panel: #161d24;
+    --panel-2: #1d2630;
+    --line: rgba(220, 232, 245, .12);
+    --line-strong: rgba(220, 232, 245, .24);
+    --fg: #eef2f5;
+    --dim: #a9b4bf;
+    --friendly: #8ec5ff;
+    --gold: #e0b15a;
+    --ok: #8fca78;
+    --warn: #e3a35c;
+    --strip: #1b4d2e;
+    --strip-fg: #e5f6ea;
+    --code-bg: #0a0e12;
+    --display: "Barlow Condensed", "DIN Alternate", "Arial Narrow", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #f2f4f7; --panel: #ffffff; --panel-2: #e9eef3; --line: rgba(18, 30, 44, .12); --line-strong: rgba(18, 30, 44, .26);
+      --fg: #121a22; --dim: #4b5866; --friendly: #1d5f9f; --gold: #8a5c06; --ok: #2f7a2a; --warn: #9a5410;
+      --strip: #1b4d2e; --strip-fg: #eaf7ee; --code-bg: #eef2f6;
+    }
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f2f4f7; --panel: #ffffff; --panel-2: #e9eef3; --line: rgba(18, 30, 44, .12); --line-strong: rgba(18, 30, 44, .26);
+    --fg: #121a22; --dim: #4b5866; --friendly: #1d5f9f; --gold: #8a5c06; --ok: #2f7a2a; --warn: #9a5410;
+    --strip: #1b4d2e; --strip-fg: #eaf7ee; --code-bg: #eef2f6;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 400 17px/1.55 var(--body); }
+  a { color: var(--friendly); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+  code, .mono { font-family: var(--mono); font-size: .86em; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+  h2 { font-size: 1.85rem; line-height: 1.15; }
+  h3 { font-size: 1.25rem; line-height: 1.2; }
+  p { margin: 0; }
+  .eyebrow { font: 600 .78rem/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  .dim { color: var(--dim); }
+
+  .strip { background: var(--strip); color: var(--strip-fg); font: 600 .72rem/1 var(--display); letter-spacing: .16em; text-transform: uppercase; padding: 7px 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; }
+  section { padding-block: 44px; border-top: 1px solid var(--line); display: grid; gap: 20px; }
+  section > header { display: grid; gap: 8px; max-width: 70ch; }
+
+  /* hero */
+  .hero { padding-block: 48px 40px; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 36px; align-items: center; border-top: 0; }
+  .hero h1 { font-size: clamp(3rem, 8vw, 5.2rem); line-height: .95; letter-spacing: .02em; }
+  .hero .lead { font-size: 1.2rem; max-width: 60ch; color: var(--fg); }
+  .hero .text { display: grid; gap: 18px; min-width: 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 4px; border: 1px solid var(--line-strong); color: var(--fg); background: var(--panel); text-decoration: none; font: 600 1rem/1 var(--display); letter-spacing: .06em; text-transform: uppercase; }
+  .btn.primary { background: var(--gold); border-color: var(--gold); color: #17120a; }
+  .btn:hover { border-color: var(--friendly); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line-strong); border-radius: 999px; font: 500 .82rem/1.2 var(--body); color: var(--dim); }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .chip .ok { background: var(--ok); } .chip .warn { background: var(--warn); }
+  .symbol { width: 100%; max-width: 260px; justify-self: center; }
+  .symbol .frame { fill: color-mix(in srgb, var(--friendly) 12%, transparent); stroke: var(--friendly); }
+  .symbol .stroke { stroke: var(--friendly); }
+  .symbol .ech { fill: var(--friendly); font: 600 26px var(--display); letter-spacing: 6px; }
+  .symbol .l1 { fill: var(--gold); font: 700 56px var(--display); letter-spacing: 4px; }
+  .symbol .l2 { fill: var(--dim); font: 500 17px var(--display); letter-spacing: 4px; }
+
+  /* workflow (a real sequence) */
+  .flow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; counter-reset: st; }
+  .flow li { list-style: none; position: relative; padding: 26px 8px 0 0; font: 600 .95rem/1.2 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--dim); }
+  .flow li::before { content: ""; position: absolute; top: 6px; left: 0; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--friendly); background: var(--bg); z-index: 1; }
+  .flow li::after { content: ""; position: absolute; top: 12px; left: 12px; right: 0; height: 2px; background: var(--line-strong); }
+  .flow li:last-child::after { display: none; }
+  .flow li:last-child::before { background: var(--ok); border-color: var(--ok); }
+  .flow { padding: 0; margin: 0; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .card p, .card li { color: var(--dim); }
+  .card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+  .tag { font: 500 .78rem/1 var(--mono); padding: 3px 6px; border-radius: 3px; background: var(--panel-2); color: var(--fg); white-space: nowrap; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .feature-memo { border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
+
+  /* steps */
+  ol.steps { margin: 0; padding: 0; display: grid; gap: 12px; counter-reset: n; max-width: 78ch; }
+  ol.steps li { list-style: none; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: start; }
+  ol.steps li::before { counter-increment: n; content: counter(n); font: 700 1.3rem/1 var(--display); color: var(--gold); border: 1px solid var(--line-strong); border-radius: 4px; height: 34px; display: grid; place-items: center; }
+  .note { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; color: var(--dim); max-width: 78ch; font-size: .95rem; }
+
+  /* tables */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+  table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 600 .78rem/1.2 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); background: var(--panel); }
+  tr:last-child td { border-bottom: 0; }
+  td b { font-weight: 600; }
+  .state { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-weight: 500; }
+  .state i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .state.ok i { background: var(--ok); } .state.warn i { background: var(--warn); }
+
+  .roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .roles .card h3 { color: var(--fg); }
+  .roles .card .who { font: 600 .74rem/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--friendly); }
+
+  .split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .check li::marker { color: var(--ok); }
+  .todo li::marker { color: var(--warn); }
+
+  .access { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .copy { font: 500 .85rem/1 var(--body); padding: 8px 12px; border-radius: 4px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--fg); cursor: pointer; }
+  .cmd { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .note code { overflow-wrap: anywhere; font-size: .92em; }
+  .cmd code { background: var(--code-bg); border: 1px solid var(--line); padding: 8px 10px; border-radius: 4px; overflow-x: auto; max-width: 100%; }
+  footer { padding-block: 28px 40px; border-top: 1px solid var(--line); color: var(--dim); font-size: .9rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; }
+    .symbol { max-width: 180px; justify-self: start; order: -1; }
+    .grid2, .roles, .split { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: 1fr; gap: 8px; }
+    .flow li { padding: 0 0 0 24px; }
+    .flow li::before { top: 2px; }
+    .flow li::after { top: 16px; left: 5px; width: 2px; height: calc(100% + 4px); right: auto; }
+  }
+  @media (prefers-reduced-motion: no-preference) { .btn { transition: border-color .15s, filter .15s; } }
+</style>
+</head>
+<body>
+<div class="strip"><span>Unclassified</span><span>Project brief · no CUI on this page</span></div>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="text">
+      <p class="eyebrow">Force Capability Workbooks · experimental force design</p>
+      <h1>FCW Builder</h1>
+      <p class="lead">Turns an FDW and its sources into a staff-ready Force Capability Workbook. Every claim is labeled, cited, or marked as a gap, and a quality gate decides when the draft is ready for staff review. It runs today. The next step is standing it up on Army systems, starting with Vantage.</p>
+      <div class="actions">
+        <a class="btn primary" href="app.html">Open the live demo</a>
+        <a class="btn" href="https://github.com/srg13640/fcw-builder" target="_blank" rel="noopener">Code on GitHub (private)</a>
+      </div>
+      <div class="chips">
+        <span class="chip"><i class="ok"></i>Working: standalone, team server, Mac app</span>
+        <span class="chip"><i class="warn"></i>Built, not yet on an enrollment: Vantage</span>
+      </div>
+    </div>
+    <svg class="symbol" viewBox="0 0 240 230" role="img" aria-label="Friendly unit symbol: corps headquarters frame reading FCW">
+      <text class="ech" x="120" y="34" text-anchor="middle">XXX</text>
+      <rect class="frame" x="22" y="48" width="196" height="122" stroke-width="5"/>
+      <text class="l1" x="120" y="122" text-anchor="middle">FCW</text>
+      <text class="l2" x="120" y="152" text-anchor="middle">BUILDER</text>
+      <path class="stroke" d="M22 170 V222" stroke-width="5"/>
+    </svg>
+  </div>
+
+  <section aria-labelledby="what">
+    <header>
+      <p class="eyebrow">What it does</p>
+      <h2 id="what">The FCW Builder module rules, enforced in software</h2>
+    </header>
+    <ol class="flow" aria-label="Workbook stages">
+      <li>Intake</li><li>Assessment</li><li>Design</li><li>Drafting</li><li>Quality gate</li><li>Staff review</li><li>Ready</li>
+    </ol>
+    <div class="grid2">
+      <div class="card">
+        <h3>Source authority</h3>
+        <p>Four tiers: user direction, approved or final, draft or validated, supporting reference. Tier 5 is reserved for labeled assumptions. When sources conflict, the higher tier controls. If no tier controls, the conflict becomes an open issue instead of a guess.</p>
+      </div>
+      <div class="card">
+        <h3>Labels and gap markers</h3>
+        <div class="tags"><span class="tag">Source-supported</span><span class="tag">Experimental hypothesis</span><span class="tag">Requires validation</span></div>
+        <div class="tags"><span class="tag">[TBD]</span><span class="tag">[Requires experimentation/analysis]</span><span class="tag">[Assumption]</span><span class="tag">[Experimental design assumption]</span></div>
+        <p>A Source-supported claim without a citation fails the gate.</p>
+      </div>
+      <div class="card">
+        <h3>Quality gate and staff review</h3>
+        <p>The nine checks from the module's Final Quality Gate, plus one autonomy check (A1). Authors submit; a reviewer who is not the author marks the workbook reviewed or returns it with a comment.</p>
+      </div>
+      <div class="card feature-memo">
+        <h3>Army Autonomous Initiatives</h3>
+        <p>The 01 Oct 2026 memo is loaded as a campaign. The six formations (aviation, armor, fires, sustainment, engineer, training) are workbook slots. The five FY28 priority lines become cited capability rows. Each autonomous capability carries a human in, on, or over the loop tag, and check A1 enforces it (DoDD 3000.09).</p>
+      </div>
+    </div>
+    <p class="dim" style="max-width:78ch">Outputs: the FCW draft in the module's required structure, brief slides generated from the workbook, line-and-wire org YAML that renders to editable PowerPoint, and a Vantage package (ontology manifest, AI FDE prompt, one dataset per object type).</p>
+  </section>
+
+  <section aria-labelledby="try">
+    <header>
+      <p class="eyebrow">Live demo</p>
+      <h2 id="try">Try it in ten minutes</h2>
+    </header>
+    <ol class="steps">
+      <li><p><a href="app.html">Open the live demo</a>. The register shows the Army Autonomous Initiatives board with the six formations from the memo, and the two worked examples, Corps 2040 and Division 2040.</p></li>
+      <li><p>Under <b>Aviation</b>, choose <b>Start workbook</b>, give it a name, and create it. The memo and DoDD 3000.09 are linked as sources, and the entries the memo states outright are already cited to their paragraphs.</p></li>
+      <li><p>On <b>Sources</b>, run the source assessment. Each source conflict it finds has a <b>Resolve</b> block: the higher tier controls, or you record an open issue. The ✕ on a source row removes it.</p></li>
+      <li><p>On <b>COAs</b>, choose <b>Open COA workbench</b>: rank the COAs best to worst on each criterion, edit or add COAs and their wiring sketches, build a hybrid, and select the one the design carries.</p></li>
+      <li><p>Open <b>Design</b>, then section <b>1.3</b>. Add the priority lines that apply, select a row, and set its human-control level in the right-hand panel.</p></li>
+      <li><p>Open <b>Gate</b> to see what blocks staff review, then <b>Brief</b> for the directive and autonomy slides and an OV-1 drawn from the workbook.</p></li>
+      <li><p>For a finished design, open <b>Corps 2040</b> or <b>Division 2040</b>. Both carry a full source register, scored COAs, a recommended hybrid design, and an interactive OV-1: pass control between command nodes, cut the network with DDIL, and on the division swap the DCG roles.</p></li>
+      <li><p>Still on <b>Design</b>, open <b>OV-1</b> and switch to <b>3D operational view</b>: orbit the concept of employment across stacked domain planes, switch the framework lens (<b>2026</b>, <b>HYBRID</b>, <b>2040 EXP</b>), step through the 2.3 phases (each names the decision to test), cut the network with DDIL, pass control, and click any label for its source. It is also a slide in the brief, and the Export menu gives the scene specification as JSON.</p></li>
+      <li><p>Back on the register, choose <b>Present findings</b> on Corps 2040 or Division 2040. The brief opens on the operational-environment slide: why a dispersed, machine-speed headquarters is required, the research findings, and the evidence base. Arrow keys change slides. Every addition from the research pass is an <b>AI proposal</b> until a human accepts it in the workspace.</p></li>
+    </ol>
+    <p class="note">The banner reads <b>AI generated · Not yet validated by human eyes</b> because the examples carry an AI research pass that no one has reviewed yet. The demo runs entirely in your browser; nothing you enter leaves it. On its own it has no language model, so drafting adds the structure and marks every gap [TBD]. If you run <a href="https://ollama.com">Ollama</a> with an open-weight model such as Gemma 4, open the backend badge in the header and choose <b>Connect</b>. The agent, the source assessment, and drafting then run on your own computer, as proposals you accept. First allow this site in Ollama: run <code>launchctl setenv OLLAMA_ORIGINS "https://srg13640.github.io"</code> on a Mac, then quit and reopen Ollama. On the team server, or with AIP Logic in Vantage, the model reads the source documents themselves. Downloads and printing are off in the hosted demo.</p>
+  </section>
+
+  <section aria-labelledby="runs">
+    <header>
+      <p class="eyebrow">Where it runs</p>
+      <h2 id="runs">One app, four places to run it</h2>
+    </header>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Mode</th><th>What it is for</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td><b>Standalone file</b></td><td>One HTML file, no install. Data stays in that browser; export a data file to move it.</td><td><span class="state ok"><i></i>Working</span></td></tr>
+          <tr><td><b>Team server</b></td><td>Shared workbooks in SQLite, source uploads, an audit log of every action, daily backups, and optional model-backed drafting: Claude, or an open-weight model on the same machine through Ollama. Node 22.13+, no native modules.</td><td><span class="state ok"><i></i>Working</span><br><span class="dim">Local model run live (Gemma 4 12B); Claude tested against a mock API</span></td></tr>
+          <tr><td><b>Mac app</b></td><td>A double-click app that starts the team server and opens the workbooks in its own window.</td><td><span class="state ok"><i></i>Working</span></td></tr>
+          <tr><td><b>Vantage</b></td><td>The same web app reading and writing the FCW ontology through the Foundry Ontology API v2, signed in with the OSDK OAuth client.</td><td><span class="state warn"><i></i>Built, not yet run on an enrollment</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="path">
+    <header>
+      <p class="eyebrow">Path onto Army systems</p>
+      <h2 id="path">Five routes from the repository into Vantage</h2>
+      <p class="dim">The data model is the Foundry ontology from the prototype's build spec, written as code, so each part has a supported way in. Palantir documents hosting a Developer Console app from a repository outside the platform.</p>
+    </header>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Route</th><th>From the repo</th><th>How it gets in</th><th>Lands in Vantage as</th></tr></thead>
+        <tbody>
+          <tr><td><b>Ontology</b></td><td><code>foundry/AI_FDE_PROMPT.md</code><br><code>foundry/fcw-ontology.json</code></td><td>AI FDE on a branch, reviewed as a Global Branch proposal</td><td>16 object types, their links, 52 action types with submission criteria</td></tr>
+          <tr><td><b>Data</b></td><td><code>npm run foundry:export</code></td><td>Upload one CSV per object type, plus three join tables</td><td>Backing datasets for each object type</td></tr>
+          <tr><td><b>App</b></td><td><code>npm run build:vantage</code></td><td>Developer Console website hosting via <code>osdk site deploy</code>, or upload by hand</td><td>A hosted app, embedded in Workshop with the Iframe widget</td></tr>
+          <tr><td><b>Logic</b></td><td><code>packages/core</code> (pure TypeScript)</td><td>Port handlers to a Foundry functions repository</td><td>Function-backed actions; the quality gate as a TypeScript function</td></tr>
+          <tr><td><b>AIP</b></td><td>Prompts and output contracts in the spec</td><td>AIP Logic and AIP Chatbot Studio</td><td>Source assessment, section drafting, and the FCW Builder agent</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Vantage is not reachable from GitHub's hosted runners. The deploy workflow in the repo runs on a self-hosted runner inside the network; without one, the build is uploaded in Developer Console by hand.</p>
+  </section>
+
+  <section aria-labelledby="need">
+    <header>
+      <p class="eyebrow">What I need from you</p>
+      <h2 id="need">Four kinds of help</h2>
+    </header>
+    <div class="roles">
+      <div class="card">
+        <span class="who">Vantage / Foundry builder</span>
+        <h3>Ontology and the hosted app</h3>
+        <ul>
+          <li>Run AI FDE with the spec on a branch, keeping the API names, and review the proposal.</li>
+          <li>Create the Author and Reviewer groups for the submission criteria.</li>
+          <li>Create a Developer Console application with an OAuth public client and website hosting. Share its URL, client ID, application RID, and the ontology RID.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="who">Platform / DevSecOps</span>
+        <h3>Where the code lives and how it deploys</h3>
+        <ul>
+          <li>An authorized place for the code inside the network: a mirror to an approved repository, or a Vantage Code Repository.</li>
+          <li>A self-hosted runner for the deploy workflow, or a manual upload path.</li>
+          <li>A dependency review. CI runs <code>npm audit</code> on every push and it is clean today.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="who">AIP builder</span>
+        <h3>Model-backed drafting in Vantage</h3>
+        <ul>
+          <li>Build source assessment and section drafting in AIP Logic from the contracts in the spec.</li>
+          <li>Build the FCW Builder agent in AIP Chatbot Studio with the module prompt.</li>
+          <li>Provide a media set for source documents.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="who">Data and security</span>
+        <h3>Markings, hosting, and models</h3>
+        <ul>
+          <li>Marking rules for FCW objects and exported products.</li>
+          <li>Whether a team server outside Vantage is worth its own accreditation, or Vantage-only is the plan.</li>
+          <li>Which model endpoint, if any, is authorized to read source documents. The model layer is swappable: Claude, a local open-weight model, or an enterprise endpoint such as GenAI.mil or AIP.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="status">
+    <header>
+      <p class="eyebrow">Status</p>
+      <h2 id="status">What is proven and what is not</h2>
+    </header>
+    <div class="split">
+      <div class="card">
+        <h3>Verified</h3>
+        <ul class="check">
+          <li>Quality gate matches the original prototype check for check on its worked example.</li>
+          <li>A new workbook runs end to end to Ready, with role, owner, and marking rules enforced.</li>
+          <li>Every object converts to a Foundry row and back without loss.</li>
+          <li>CI on every push: typecheck, tests, builds, dependency audit.</li>
+          <li>Main workflow walked through in the browser; Mac app cold start.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Not yet</h3>
+        <ul class="todo">
+          <li>Live Claude calls; they are tested against a simulated API. The local open-weight path has run live.</li>
+          <li>The Vantage adapter and deploy workflow on a real enrollment.</li>
+          <li>PowerPoint export of the brief. Today it is PDF, plus line-and-wire PowerPoint.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="rules">
+    <header>
+      <p class="eyebrow">Ground rules</p>
+      <h2 id="rules">Built in, not optional</h2>
+    </header>
+    <div class="grid2">
+      <div class="card"><h3>Markings</h3><p>The builder never sets a classification marking. The originator marks every exported product.</p></div>
+      <div class="card"><h3>Content</h3><p>No CUI goes on GitHub or in this demo. The two worked examples are experimental designs from an analyst draft and public sources, not approved organizations; personal names are removed.</p></div>
+      <div class="card"><h3>The agent proposes</h3><p>The author applies. The agent never chooses a human-control level or decides a conflict that no tier controls.</p></div>
+      <div class="card"><h3>Every write is an action</h3><p>Each change runs a named action with submission criteria, the same ones Vantage enforces, and is logged.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="access">
+    <header>
+      <p class="eyebrow">Access</p>
+      <h2 id="access">Getting the code</h2>
+      <p class="dim">The repository is private. Send your GitHub username to the owner to be added.</p>
+    </header>
+    <div class="access">
+      <span class="chip">Repository owner on GitHub: <b class="mono" id="owner">srg13640</b></span>
+      <button class="copy" type="button" data-copy="https://github.com/srg13640/fcw-builder">Copy repository link</button>
+    </div>
+    <div class="cmd">
+      <code id="clone">git clone https://github.com/srg13640/fcw-builder.git &amp;&amp; cd fcw-builder &amp;&amp; npm install &amp;&amp; npm run build &amp;&amp; npm start</code>
+      <button class="copy" type="button" data-copy-from="clone">Copy</button>
+    </div>
+    <p class="dim">Then open <code>http://localhost:8787</code>. Start with <code>README.md</code> and <code>docs/VANTAGE.md</code>.</p>
+  </section>
+
+  <footer>
+    <span>FCW Builder 0.1 · brief updated 3 Oct 2026</span>
+    <span>Independent working prototype · not an official Army system or website · not an approval or force-structure decision</span>
+  </footer>
+</main>
+
+<script>
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('button.copy');
+    if (!b) return;
+    const text = b.dataset.copy || document.getElementById(b.dataset.copyFrom)?.textContent || '';
+    const label = b.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      b.textContent = 'Copied';
+    } catch {
+      const src = b.dataset.copyFrom ? document.getElementById(b.dataset.copyFrom) : null;
+      if (src) { const r = document.createRange(); r.selectNodeContents(src); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+      b.textContent = 'Press ⌘C';
+    }
+    setTimeout(() => { b.textContent = label; }, 1800);
+  });
+</script>
+</body>
+</html>
